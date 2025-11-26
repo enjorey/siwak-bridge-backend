@@ -1,36 +1,31 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-
-require('dotenv').config();
-
+const { PORT } = require('./src/config');
 const authRoutes = require('./src/routes/auth');
 const membershipRoutes = require('./src/routes/memberships');
 const paymentRoutes = require('./src/routes/payments');
+const webhookRoutes = require('./src/routes/webhook');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// CORS and JSON
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// IMPORTANT: raw body for webhooks
-app.use('/api/payments/webhook', bodyParser.raw({ type: '*/*' }));
+// Webhook (raw body)
+app.use('/webhook', webhookRoutes);
 
-// Normal JSON for all other routes
-app.use(bodyParser.json());
+// API routes
+app.use('/auth', authRoutes);
+app.use('/memberships', membershipRoutes);
+app.use('/payments', paymentRoutes);
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/memberships', membershipRoutes);
-app.use('/api/payments', paymentRoutes);
-
-// Test route
+// Root
 app.get('/', (req, res) => {
-  res.json({ message: 'Siwak-Bridge Backend is running 🚀' });
+  res.send('Siwak-Bridge Backend API is running...');
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
